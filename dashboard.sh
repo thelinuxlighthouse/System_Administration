@@ -56,10 +56,10 @@ tput cup 16 10; echo "${YELLOW}Press Ctrl+C to exit.${RESET}"
 # ————————————————————————————— 🔽 BONUS COMMANDS 🔽 —————————————————————————————
 
 # 📊 Terminal Table View (Random values):
-seq 1 5 | xargs -I{} bash -c 'echo "Row {} | Value $RANDOM"' | column -t -s '|'
+# seq 1 5 | xargs -I{} bash -c 'echo "Row {} | Value $RANDOM"' | column -t -s '|'
 
 # 🪵 Live Log Viewer (No Clutter):
-journalctl -f -o cat
+# journalctl -f -o cat
 
 # ————————————————————————————— 🎯 SUPPORT THE CHANNEL 🎯 —————————————————————————————
 
