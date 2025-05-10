@@ -1,14 +1,14 @@
-————————————————————————————— 💻 DASHBOARD SCRIPT 💻 —————————————————————————————
+# ————————————————————————————— 💻 DASHBOARD SCRIPT 💻 —————————————————————————————
 
-Save the following as `dashboard.sh` and make it executable:
+# Save the following as `dashboard.sh` and make it executable:
 
-chmod +x dashboard.sh
+# chmod +x dashboard.sh
 
-Then run it live with:
+# Then run it live with:
 
-watch -n 1 -c ./dashboard.sh
+# watch -n 1 -c ./dashboard.sh
 
-📜 CODE:
+# 📜 CODE:
 
 #!/bin/bash
 
@@ -53,19 +53,19 @@ tput cup 14 21; date +"%Y-%m-%d %H:%M:%S"
 # Footer
 tput cup 16 10; echo "${YELLOW}Press Ctrl+C to exit.${RESET}"
 
-————————————————————————————— 🔽 BONUS COMMANDS 🔽 —————————————————————————————
+# ————————————————————————————— 🔽 BONUS COMMANDS 🔽 —————————————————————————————
 
-📊 Terminal Table View (Random values):
+# 📊 Terminal Table View (Random values):
 seq 1 5 | xargs -I{} bash -c 'echo "Row {} | Value $RANDOM"' | column -t -s '|'
 
-🪵 Live Log Viewer (No Clutter):
+# 🪵 Live Log Viewer (No Clutter):
 journalctl -f -o cat
 
-————————————————————————————— 🎯 SUPPORT THE CHANNEL 🎯 —————————————————————————————
+# ————————————————————————————— 🎯 SUPPORT THE CHANNEL 🎯 —————————————————————————————
 
-If this helped you, please:
-👍 Like  
-🧠 Comment  
-🔔 Subscribe for more CLI wisdom
+# If this helped you, please:
+# 👍 Like  
+# 🧠 Comment  
+# 🔔 Subscribe for more CLI wisdom
 
-Follow: @TheLinuxLighthouse
+# Follow: @TheLinuxLighthouse
