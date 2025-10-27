@@ -1,0 +1,135 @@
+Quick solution to game on openSUSE (Leap 15.6)
+Use regata OS, it is openSUSE Leap base with latest kernel, and out of the box added all the needed repositories for multimedia, drivers, applications, Also Steam is installed by default. Customised KDE Plasma. it has a repo hosted on opensuse.org repositories, they use kernel 6.15 of the time of this video, the kernel is in regata repo. Regata has two ISOs, one without nvidia drivers pre-installaed, and the other contains Nvidia drivers
+
+-----------------------------------------------------------------------------
+
+now, Using Tumbleweed with gaming supported hardware:
+
+Preparations:
+------------
+for DE (Gnome or KDE), Display Manager (Xorg or Wayland), Security (Apparmor or SELiux), it is your choice, whatever suits your needs
+
+my setup, is KDE, X11, and Apparmor
+
+1- Nividia GPU - RTX 2060 6GB + AMD Ryzen 7 4800H 8-Core
+/etc/default/grub
+Append 'rd.driver.blacklist=nouveau' to end of ‘GRUB_CMDLINE_LINUX=""
+
+/etc/modprobe.d/50-blacklist-nouveau.conf
+blacklist nouveau
+options nouveau modeset=0
+
+# dracut -f
+# grub2-mkconfig -o /boot/grub2/grub.cfg
+
+#### Bash Shell Environment Variables ###
+__NV_PRIME_RENDER_OFFLOAD=1 __VK_LAYER_NV_optimus=NVIDIA_only __GLX_VENDOR_LIBRARY_NAME=nvidia QT_QPA_PLATFORM=xcb CUDA_VISIBLE_DEVICES=0 __GL_THREADED_OPTIMIZATIONS=1 __GL_SYNC_TO_VBLANK=0 __GL_ALLOW_UNOFFICIAL_PROTOCOL=1 __NV_PRIME_RENDER_OFFLOAD=1 __NV_PRIME_RENDER_OFFLOAD_PROVIDER=NVIDIA-G0 __VK_LAYER_NV_optimus=NVIDIA_only __GLX_VENDOR_LIBRARY_NAME=nvidia KDE_FULL_SESSION=1 XDG_CURRENT_DESKTOP=KDE XDG_SESSION_TYPE=x11
+
+For Steam/games on X11 (PRIME render offload to NVIDIA):
+        __NV_PRIME_RENDER_OFFLOAD=1
+        __GLX_VENDOR_LIBRARY_NAME=nvidia
+        __VK_LAYER_NV_optimus=NVIDIA_only
+
+Optional (only if auto-detect fails):
+        __NV_PRIME_RENDER_OFFLOAD_PROVIDER=NVIDIA-G0
+
+For DaVinci Resolve (only if you’re on Wayland):
+       QT_QPA_PLATFORM=xcb
+
+# zypper addrepo https://download.nvidia.com/opensuse/tumbleweed Nvidia-TW
+# zypper addrepo https://ftp.gwdg.de/pub/linux/misc/packman/suse/openSUSE_Tumbleweed Pacman
+# zypper ref
+
+--Install GPU driver--
+# zypper in --details --recommended dkms suse-prime nvidia-video-G06 nvidia-gl-G06 nvidia-common-G06 nvidia-compute-G06 nvidia-compute-utils-G06 nvidia-settings gamemode
+# zypper dup --details
+
+If you are not in any of these group, make sure to run:
+# usermod -aG video,render,wheel <USER_NAME>
+
+# systemctl reboot
+
+--What worked for me--
+# prime-select nvidia
+# prime-select boot nvidia
+# prime-select next-boot nvidia
+
+Log-out, then Log-in back again or reboot better
+
+run "nvidia-smi" to check your GPU status
+
+###################################################################################################
+
+2- AMD GPU - Radeon RX 9070 XT 16GB + AMD Ryzen 9 9950X3D 16-Core
+
+# zypper dup --details
+# zypper addrepo https://ftp.gwdg.de/pub/linux/misc/packman/suse/openSUSE_Tumbleweed Pacman
+# zypper addrepo https://download.opensuse.org/repositories/devel:/languages:/perl/openSUSE_Tumbleweed devel_languages_perl
+# zypper addrepo https://download.opensuse.org/repositories/Education/openSUSE_Tumbleweed Education
+# zypper addrepo https://download.opensuse.org/repositories/science:/GPU:/ROCm/openSUSE_Tumbleweed science_GPU_ROCm
+# zypper addrepo https://download.opensuse.org/repositories/science:/GPU:/ROCm:/Work/openSUSE_Tumbleweed science_GPU_ROCm_Work
+# zypper addrepo https://download.opensuse.org/repositories/science/openSUSE_Tumbleweed science
+# zypper ref
+
+--Install GPU driver and Tools--
+# zypper in --details --recommends rocm rocm-clinfo rocm-hip rocm-smi rocm-opencl rocminfo amdgpu_top
+
+/etc/udev/rules.d/70-amdgpu.rules
+KERNEL=="kfd", MODE="0660" , GROUP=="video"
+SUBSYSTEM=="drm", KERNEL=="renderD*", MODE="0660"
+
+/etc/udev/rules.d/70-kfd.rules
+SUBSYSTEM=="kfd", KERNEL=="kfd", TAG+="uaccess", GROUP="video"
+
+# usermod -aG video,render,wheel <USER_NAME>
+
+# systemctl reboot
+
+run "amdgpu_top --single" to check your GPU status
+
+--Install Steam--
+# zypper in --details --recommends steam gamescope gamemode mangohud vkbasalt libvulkan1 vulkan-tools Mesa-dri Mesa-libGL1 Mesa-libGL1-32bit libvulkan1-32bit Mesa-dri-32bit  libdrm_amdgpu1 libdrm_amdgpu1-32bit
+
+for the first time, better start steam from terminal to see what is going on while steam finish downloading its client.
+
+Later, In case you are on KDE, and started Steam by clicking on the icon in the application menue, and Steam window did not show up, edit the following file to be like this:
+
+.local/share/applications/steam.desktop
+[Desktop Entry]
+Categories=Game;
+Comment=Application for managing and playing games on Steam
+Exec=env RADV_PERFTEST=aco STEAM_FORCE_DESKTOP_UI=1 mesa_glthread=true PROTON_ENABLE_FS_SYNC=1 /usr/bin/steam %U
+Icon=steam
+MimeType=x-scheme-handler/steam;x-scheme-handler/steamlink;
+Name=Steam
+NoDisplay=false
+Path=
+PrefersNonDefaultGPU=false
+StartupNotify=true
+StartupWMClass=Steam
+Terminal=false
+TerminalOptions=
+Type=Application
+X-KDE-SubstituteUID=false
+X-KDE-Username=
+
+#### Bash Shell Environment Variables ###
+RADV_PERFTEST=aco
+STEAM_FORCE_DESKTOP_UI=1
+mesa_glthread=true
+PROTON_ENABLE_FS_SYNC=1
+QT_QPA_PLATFORM=xcb
+RESOLVE_OPENCL_VENDOR=amd
+KDE_FULL_SESSION=1
+XDG_CURRENT_DESKTOP=KDE
+XDG_SESSION_TYPE=x11
+
+
+# For DaVinci Resolve (if using KDE/Wayland)
+QT_QPA_PLATFORM=xcb
+RESOLVE_OPENCL_VENDOR=amd
+
+# For Steam / Proton games (performance tuning)
+RADV_PERFTEST=aco
+mesa_glthread=true
+PROTON_ENABLE_FS_SYNC=1
